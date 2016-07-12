@@ -29,7 +29,7 @@ private:
 
     void initConnections(void);
     void releaseConnections(void);
-    void setSharing(int which);
+    void setSharing(unsigned int which);
 
     void allowHostedNetWork(void);
     void disallowHostedNetWork(void);
@@ -49,7 +49,7 @@ public:
     int getStatus(void);
     const vector<Connection> *getOtherConnection(void);
     int getPeerNumber(void);
-    void switchStatus(int which);
+    void switchStatus(unsigned int which);
 };
 
 

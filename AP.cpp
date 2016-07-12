@@ -33,7 +33,7 @@ AP::AP(void)
 
 AP::~AP(void)
 {
-    if (status = STATUS_ON) {
+    if (status == STATUS_ON) {
         stopHostedNetWork();
         status = status == STATUS_ERROR ? STATUS_ERROR : STATUS_OFF;
     }
@@ -111,7 +111,7 @@ void AP::initConnections(void)
                                     hr = pNC->GetProperties(&pNP);
                                     if (hr != S_OK || !pNP) {
                                         status = STATUS_ERROR;
-                                    } else if (pNP->Status == NCS_CONNECTED) {
+                                    } else {
 
                                         Connection conn;
                                         conn.pNC = pNC;
@@ -164,7 +164,7 @@ void AP::releaseConnections(void)
     CoUninitialize();
 }
 
-void AP::setSharing(int which)
+void AP::setSharing(unsigned int which)
 {
     if (status == STATUS_ERROR) {
         return;
@@ -195,8 +195,9 @@ void AP::setSharing(int which)
     }
     pOtherConnections->pop_back();
 
-    if ((*pOtherConnections)[which].pNP->guidId != publicSharing.pNP->guidId) {
-        if (S_OK != publicSharing.pNSC->DisableSharing()) {
+    if (publicSharing.pNP == NULL || 
+        (*pOtherConnections)[which].pNP->guidId != publicSharing.pNP->guidId) {
+        if (publicSharing.pNP != NULL && S_OK != publicSharing.pNSC->DisableSharing()) {
             status = STATUS_ERROR;
             return;
         }
@@ -206,8 +207,9 @@ void AP::setSharing(int which)
         }
     }
 
-    if (pAPConnection->pNP->guidId != privateSharing.pNP->guidId) {
-        if (S_OK != privateSharing.pNSC->DisableSharing()) {
+    if (privateSharing.pNP == NULL ||
+        pAPConnection->pNP->guidId != privateSharing.pNP->guidId) {
+        if (privateSharing.pNP != NULL && S_OK != privateSharing.pNSC->DisableSharing()) {
             status = STATUS_ERROR;
             return;
         }
@@ -331,10 +333,12 @@ void AP::setKEY(void)
     }
 }
 
-void AP::switchStatus(int which)
+void AP::switchStatus(unsigned int which)
 {
     if (status == STATUS_OFF) {
-        setSharing(which);
+        if (which >=0 && which < pOtherConnections->size()) {
+            setSharing(which);
+        }
         startHostedNetWork();
         status = status == STATUS_ERROR ? STATUS_ERROR : STATUS_ON;
     } else if (status == STATUS_ON) {

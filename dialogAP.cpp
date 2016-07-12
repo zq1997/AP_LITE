@@ -7,6 +7,7 @@
 
 static INT_PTR CALLBACK DlgProc(HWND dlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static void DialogInit(void);
+static void Switch(void);
 static void Config(void);
 static void RefreshInfo(void);
 static void ShowMenu(void);
@@ -82,12 +83,7 @@ static INT_PTR CALLBACK DlgProc(HWND dialog, UINT msg, WPARAM wParam, LPARAM lPa
         switch (LOWORD(wParam)) {
         case IDC_SWITCH:
         case ID_MENU_SWITCH:
-            if (gpAP->getStatus() == AP::STATUS_OFF) {
-                str.LoadStringW(IDS_IS_TURNING_ON);
-                SetWindowText(GetDlgItem(gDialog, IDC_INFO), str);
-            }
-            gpAP->switchStatus(ComboBox_GetCurSel(GetDlgItem(gDialog, IDC_SHARED)));
-            RefreshInfo();
+            Switch();
             break;
 
         case IDC_CONFIG:
@@ -152,12 +148,42 @@ static void DialogInit(void)
     HWND combo = GetDlgItem(gDialog, IDC_SHARED);
     const vector<Connection> *pConnections = gpAP->getOtherConnection();
     for (vector<LPWSTR>::size_type i = 0; i < pConnections->size(); ++i) {
-        ComboBox_AddString(combo, (*pConnections)[i].pNP->pszwName);
+        if ((*pConnections)[i].pNP->Status == NCS_CONNECTED) {
+            ComboBox_AddString(combo, (*pConnections)[i].pNP->pszwName);
+        }
     }
+    str.LoadStringW(IDS_NONE);
+    ComboBox_AddString(combo, str);
     ComboBox_SetCurSel(combo, 0);
 
     RefreshInfo();
     SetTimer(gDialog, 1, 5000, NULL);
+}
+
+static void Switch(void)
+{
+    CStringW str;
+    if (gpAP->getStatus() == AP::STATUS_OFF) {
+        str.LoadStringW(IDS_IS_TURNING_ON);
+        SetWindowText(GetDlgItem(gDialog, IDC_INFO), str);
+    }
+
+    HWND combo = GetDlgItem(gDialog, IDC_SHARED);
+    int len = ComboBox_GetTextLength(combo) + 1;
+    int which = -1;
+    LPWSTR buffer = new WCHAR[len];
+    ComboBox_GetText(combo, buffer, len);
+
+    const vector<Connection> *pConnections = gpAP->getOtherConnection();
+    for (vector<LPWSTR>::size_type i = 0; i < pConnections->size(); ++i) {
+        if (!StrCmp((*pConnections)[i].pNP->pszwName, buffer)) {
+            which = i;
+        }
+    }
+
+    delete[] buffer;
+    gpAP->switchStatus(which);
+    RefreshInfo();
 }
 
 static void Config(void)
@@ -221,7 +247,6 @@ static void RefreshInfo(void)
         EnableWindow(GetDlgItem(gDialog, IDC_SHARED), false);
     }
 }
-
 
 static void ShowMenu(void)
 {
