@@ -7,6 +7,8 @@
 #define CMD_SIZE (MAX_PATH * 2 + 32 + 1)
 #define SSID_SIZE 64
 #define KEY_SIZE 64
+#define SSID_MIN_LEN 1
+#define KEY_MIN_LEN 8
 
 #define CONFIG_OPTION "-- config"
 #define CLEAN_OPTION "-- clean"
@@ -18,3 +20,5 @@ struct ConfigData {
     WCHAR key[KEY_SIZE] = L"AsyncCode";
     bool askBeforeQuit = true;
 };
+
+extern ConfigData gConfigData;

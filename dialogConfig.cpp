@@ -5,7 +5,6 @@ static void DialogInit(void);
 static void Quit(void);
 static void Submit(void);
 
-static ConfigData gConfigData;
 static HWND gDialog;
 
 LPWSTR gOriginFilename;
@@ -65,13 +64,6 @@ static void DialogInit(void)
     str.LoadStringW(IDS_KEY_TITLE);
     SetWindowText(GetDlgItem(gDialog, IDC_NEW_KEY_TITLE), str);
 
-    HMODULE module = GetModuleHandle(NULL);
-    HRSRC resource = FindResource(module, MAKEINTRESOURCE(IDR_CONFIG_FILE), RT_RCDATA);
-    HGLOBAL global = LoadResource(module, resource);
-    int size = SizeofResource(module, resource);
-    if (size == sizeof(gConfigData)) {
-        memcpy(&gConfigData, LockResource(global), size);
-    }
     SetWindowText(GetDlgItem(gDialog, IDC_NEW_SSID), gConfigData.ssid);
     SetWindowText(GetDlgItem(gDialog, IDC_NEW_KEY), gConfigData.key);
 
@@ -112,12 +104,43 @@ static void Quit(void)
 
 static void Submit(void)
 {
-    GetWindowText(GetDlgItem(gDialog, IDC_NEW_SSID), gConfigData.ssid, SSID_SIZE);
-    GetWindowText(GetDlgItem(gDialog, IDC_NEW_KEY), gConfigData.key, KEY_SIZE);
+    HWND hSsid = GetDlgItem(gDialog, IDC_NEW_SSID);
+    HWND hKey = GetDlgItem(gDialog, IDC_NEW_KEY);
+    CStringW str, format;
+
+    if (GetWindowTextLength(hSsid) < SSID_MIN_LEN ||
+        GetWindowTextLength(hSsid) >= SSID_SIZE) {
+        format.LoadStringW(IDS_ILLEGAL_SSID_LEN_FORMAT);
+        str.Format(format, SSID_MIN_LEN, SSID_SIZE - 1);
+        SetWindowText(GetDlgItem(gDialog, IDC_OUTPUT), str);
+        return;
+    }
+
+    if (GetWindowTextLength(hKey) < KEY_MIN_LEN ||
+        GetWindowTextLength(hKey) >= KEY_SIZE) {
+        format.LoadStringW(IDS_ILLEGAL_KEY_LEN_FORMAT);
+        str.Format(format, KEY_MIN_LEN, KEY_SIZE - 1);
+        SetWindowText(GetDlgItem(gDialog, IDC_OUTPUT), str);
+        return;
+    }
+
+    WCHAR newKeyW[KEY_SIZE];
+    GetWindowText(hKey, newKeyW, KEY_SIZE);
+    USES_CONVERSION;
+    for (char *newKey = W2A(newKeyW); *newKey != 0; ++newKey) {
+        if (*newKey < 0) {
+            str.LoadStringW(IDS_KEY_NOT_ASCII);
+            SetWindowText(GetDlgItem(gDialog, IDC_OUTPUT), str);
+            return;
+        }
+    }
+
+
+    GetWindowText(hSsid, gConfigData.ssid, SSID_SIZE);
+    StrCpy(gConfigData.key, newKeyW);
     gConfigData.askBeforeQuit = IsDlgButtonChecked(gDialog, IDC_ASK_BEFORE_QUIT) == BST_CHECKED;
 
     HANDLE updateRes = BeginUpdateResource(gOriginFilename, FALSE);
-    CStringW str;
     str.LoadStringW(IDS_OUTPUT_FAIL);
 
     if (updateRes == NULL) {

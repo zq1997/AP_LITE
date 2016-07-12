@@ -12,22 +12,16 @@ static void RefreshInfo(void);
 static void ShowMenu(void);
 static bool QuitWithCheck(void);
 
-static ConfigData gConfigData;
 static HWND gDialog;
 static HINSTANCE gInstance;
 static NOTIFYICONDATA gNid;
 
-static AP gAP(&gConfigData);
+static AP *gpAP = NULL;
 
 int WINAPI AP_WinMain(HINSTANCE instance)
 {
     gInstance = instance;
-    HWND gDialog = CreateDialog(gInstance,
-        MAKEINTRESOURCE(IDD_AP), GetDesktopWindow(), (DLGPROC)DlgProc);
-    if (!gDialog) {
-        return 0;
-    }
-    ShowWindow(gDialog, SW_SHOW);
+    gpAP = new AP();
 
     CStringW str;
     str.LoadStringW(IDS_AP_DIALOG_TITLT);
@@ -38,6 +32,13 @@ int WINAPI AP_WinMain(HINSTANCE instance)
     gNid.uCallbackMessage = WM_SHOWTASK;
     gNid.hIcon = LoadIcon(gInstance, MAKEINTRESOURCE(IDI_ICON));
     StrCpy(gNid.szTip, str);
+
+    HWND gDialog = CreateDialog(gInstance,
+        MAKEINTRESOURCE(IDD_AP), GetDesktopWindow(), (DLGPROC)DlgProc);
+    if (!gDialog) {
+        return 0;
+    }
+    ShowWindow(gDialog, SW_SHOW);
 
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0)) {
@@ -81,11 +82,11 @@ static INT_PTR CALLBACK DlgProc(HWND dialog, UINT msg, WPARAM wParam, LPARAM lPa
         switch (LOWORD(wParam)) {
         case IDC_SWITCH:
         case ID_MENU_SWITCH:
-            if (gAP.getStatus() == AP::STATUS_OFF) {
+            if (gpAP->getStatus() == AP::STATUS_OFF) {
                 str.LoadStringW(IDS_IS_TURNING_ON);
                 SetWindowText(GetDlgItem(gDialog, IDC_INFO), str);
             }
-            gAP.switchStatus(ComboBox_GetCurSel(GetDlgItem(gDialog, IDC_SHARED)));
+            gpAP->switchStatus(ComboBox_GetCurSel(GetDlgItem(gDialog, IDC_SHARED)));
             RefreshInfo();
             break;
 
@@ -137,13 +138,6 @@ static void DialogInit(void)
     str.LoadStringW(IDS_KEY_TITLE);
     SetWindowText(GetDlgItem(gDialog, IDC_KEY_TITLE), str);
 
-    HMODULE module = GetModuleHandle(NULL);
-    HRSRC resource = FindResource(module, MAKEINTRESOURCE(IDR_CONFIG_FILE), RT_RCDATA);
-    HGLOBAL global = LoadResource(module, resource);
-    int size = SizeofResource(module, resource);
-    if (size == sizeof(gConfigData)) {
-        memcpy(&gConfigData, LockResource(global), size);
-    }
     SetWindowText(GetDlgItem(gDialog, IDC_SSID), gConfigData.ssid);
     SetWindowText(GetDlgItem(gDialog, IDC_KEY), gConfigData.key);
 
@@ -156,7 +150,7 @@ static void DialogInit(void)
     SetWindowText(GetDlgItem(gDialog, IDC_SHARED_TITLE), str);
 
     HWND combo = GetDlgItem(gDialog, IDC_SHARED);
-    const vector<Connection> *pConnections = gAP.getOtherConnection();
+    const vector<Connection> *pConnections = gpAP->getOtherConnection();
     for (vector<LPWSTR>::size_type i = 0; i < pConnections->size(); ++i) {
         ComboBox_AddString(combo, (*pConnections)[i].pNP->pszwName);
     }
@@ -201,7 +195,7 @@ static void Config(void)
 static void RefreshInfo(void)
 {
     CStringW str;
-    int status = gAP.getStatus();
+    int status = gpAP->getStatus();
 
     if (status != AP::STATUS_ERROR) {
         str.LoadStringW(status == AP::STATUS_OFF ? IDS_SWITCH_ON : IDS_SWITCH_OFF);
@@ -214,7 +208,7 @@ static void RefreshInfo(void)
 
     if (status == AP::STATUS_ON) {
         str.LoadStringW(IDS_USERINFO_PREFIX);
-        str.AppendFormat(L"%d", gAP.getPeerNumber());
+        str.AppendFormat(L"%d", gpAP->getPeerNumber());
         SetWindowText(GetDlgItem(gDialog, IDC_INFO), str);
     } else {
         str.LoadStringW(IDS_IS_NOT_ON);
@@ -240,8 +234,8 @@ static void ShowMenu(void)
     str.LoadStringW(IDS_ABOUT);
     InsertMenu(menu, 0xFFFFFFFF, MF_BYPOSITION | MF_STRING, ID_MENU_ABOUT, str);
 
-    if (gAP.getStatus() != AP::STATUS_ERROR) {
-        str.LoadStringW(gAP.getStatus() == AP::STATUS_OFF ? IDS_SWITCH_ON : IDS_SWITCH_OFF);
+    if (gpAP->getStatus() != AP::STATUS_ERROR) {
+        str.LoadStringW(gpAP->getStatus() == AP::STATUS_OFF ? IDS_SWITCH_ON : IDS_SWITCH_OFF);
         InsertMenu(menu, 0xFFFFFFFF, MF_BYPOSITION | MF_STRING, ID_MENU_SWITCH, str);
     } else {
         str.LoadStringW(IDS_ERROR);
@@ -264,9 +258,10 @@ static bool QuitWithCheck(void)
     CStringW str;
     str.LoadStringW(IDS_QUIT_WARNNING);
 
-    if (gAP.getStatus() == AP::STATUS_ON && gConfigData.askBeforeQuit) {
+    if (gpAP->getStatus() == AP::STATUS_ON && gConfigData.askBeforeQuit) {
         if (MessageBox(gDialog, str, L"", MB_OKCANCEL | MB_ICONWARNING) == IDOK) {
             PostQuitMessage(0);
+            delete gpAP;
             return true;
         } else {
             return false;

@@ -23,7 +23,6 @@ class AP
 private:
     int status;
     HANDLE client;
-    ConfigData *pConfigData = NULL;
 
     Connection* pAPConnection = NULL;
     vector<Connection> *pOtherConnections = NULL;
@@ -44,7 +43,7 @@ public:
     const static int STATUS_OFF = 0;
     const static int STATUS_ERROR = -1;
 
-    AP(ConfigData *pConfigData);
+    AP(void);
     ~AP(void);
 
     int getStatus(void);

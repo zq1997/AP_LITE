@@ -1,8 +1,7 @@
 ﻿#include "AP.h"
 
-AP::AP(ConfigData *pConfigData)
+AP::AP(void)
 {
-    this->pConfigData = pConfigData;
     this->status = STATUS_OFF;
     DWORD version = 0;
     DWORD result = 0;
@@ -288,7 +287,7 @@ void AP::setSSID(void)
 {
     if (status != STATUS_ERROR) {
         USES_CONVERSION;
-        PCHAR name = W2A(pConfigData->ssid);
+        PCHAR name = W2A(gConfigData.ssid);
 
         DWORD result = 0;
         WLAN_HOSTED_NETWORK_REASON failedReason;
@@ -315,7 +314,7 @@ void AP::setKEY(void)
 {
     if (status != STATUS_ERROR) {
         USES_CONVERSION;
-        PCHAR key = W2A(pConfigData->key);
+        PCHAR key = W2A(gConfigData.key);
 
         WLAN_HOSTED_NETWORK_REASON failedReason;
         DWORD result = 0;

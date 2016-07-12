@@ -3,8 +3,18 @@
 int WINAPI AP_WinMain(HINSTANCE instance);
 int WINAPI Config_WinMain(HINSTANCE instance, LPWSTR originFilename);
 
+ConfigData gConfigData;
+
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmd, int nShow)
 {
+    HMODULE module = GetModuleHandle(NULL);
+    HRSRC resource = FindResource(module, MAKEINTRESOURCE(IDR_CONFIG_FILE), RT_RCDATA);
+    HGLOBAL global = LoadResource(module, resource);
+    int size = SizeofResource(module, resource);
+    if (size == sizeof(gConfigData)) {
+        memcpy(&gConfigData, LockResource(global), size);
+    }
+
     USES_CONVERSION;
     LPSTR arg;
     LPWSTR filename;
