@@ -4,8 +4,9 @@
 using namespace std;
 
 #include "common.h"
-#include <wlanapi.h>
 #include <NetCon.h>
+
+#include <wlanapi.h>
 #pragma comment(lib,"wlanapi.lib")
 
 #define MAX_NUMBER_OF_PEERS 16
@@ -13,7 +14,6 @@ using namespace std;
 
 struct  Connection
 {
-    INetConnection * pNC = NULL;
     INetSharingConfiguration * pNSC = NULL;
     NETCON_PROPERTIES* pNP = NULL; 
 };
@@ -21,22 +21,17 @@ struct  Connection
 class AP
 {
 private:
-    int status;
-    HANDLE client;
+    int mStatus;
+    HANDLE mClient;
 
-    Connection* pAPConnection = NULL;
-    vector<Connection> *pOtherConnections = NULL;
+    Connection* mpAPConnection = NULL;
+    vector<Connection> *mpOtherConnections = NULL;
 
-    void initConnections(void);
+    void scanConnections(bool targetIsAPConn);
     void releaseConnections(void);
     void setSharing(unsigned int which);
 
-    void allowHostedNetWork(void);
-    void disallowHostedNetWork(void);
-    void startHostedNetWork(void);
-    void stopHostedNetWork(void);
-    void setSSID(void);
-    void setKEY(void);
+    void setConfig(void);
 
 public:
     const static int STATUS_ON = 1;

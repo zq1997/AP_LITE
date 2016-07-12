@@ -104,12 +104,12 @@ static void Quit(void)
 
 static void Submit(void)
 {
-    HWND hSsid = GetDlgItem(gDialog, IDC_NEW_SSID);
+    HWND hSSID = GetDlgItem(gDialog, IDC_NEW_SSID);
     HWND hKey = GetDlgItem(gDialog, IDC_NEW_KEY);
     CStringW str, format;
 
-    if (GetWindowTextLength(hSsid) < SSID_MIN_LEN ||
-        GetWindowTextLength(hSsid) >= SSID_SIZE) {
+    if (GetWindowTextLength(hSSID) < SSID_MIN_LEN ||
+        GetWindowTextLength(hSSID) >= SSID_SIZE) {
         format.LoadStringW(IDS_ILLEGAL_SSID_LEN_FORMAT);
         str.Format(format, SSID_MIN_LEN, SSID_SIZE - 1);
         SetWindowText(GetDlgItem(gDialog, IDC_OUTPUT), str);
@@ -136,7 +136,7 @@ static void Submit(void)
     }
 
 
-    GetWindowText(hSsid, gConfigData.ssid, SSID_SIZE);
+    GetWindowText(hSSID, gConfigData.ssid, SSID_SIZE);
     StrCpy(gConfigData.key, newKeyW);
     gConfigData.askBeforeQuit = IsDlgButtonChecked(gDialog, IDC_ASK_BEFORE_QUIT) == BST_CHECKED;
 

@@ -221,10 +221,10 @@ static void Config(void)
 static void RefreshInfo(void)
 {
     CStringW str;
-    int status = gpAP->getStatus();
+    int mStatus = gpAP->getStatus();
 
-    if (status != AP::STATUS_ERROR) {
-        str.LoadStringW(status == AP::STATUS_OFF ? IDS_SWITCH_ON : IDS_SWITCH_OFF);
+    if (mStatus != AP::STATUS_ERROR) {
+        str.LoadStringW(mStatus == AP::STATUS_OFF ? IDS_SWITCH_ON : IDS_SWITCH_OFF);
         SetWindowText(GetDlgItem(gDialog, IDC_SWITCH), str);
     } else {
         str.LoadStringW(IDS_ERROR);
@@ -232,7 +232,7 @@ static void RefreshInfo(void)
         EnableWindow(GetDlgItem(gDialog, IDC_SWITCH), false);
     }
 
-    if (status == AP::STATUS_ON) {
+    if (mStatus == AP::STATUS_ON) {
         str.LoadStringW(IDS_USERINFO_PREFIX);
         str.AppendFormat(L"%d", gpAP->getPeerNumber());
         SetWindowText(GetDlgItem(gDialog, IDC_INFO), str);
@@ -241,7 +241,7 @@ static void RefreshInfo(void)
         SetWindowText(GetDlgItem(gDialog, IDC_INFO), str);
     }
 
-    if (status == AP::STATUS_OFF) {
+    if (mStatus == AP::STATUS_OFF) {
         EnableWindow(GetDlgItem(gDialog, IDC_SHARED), true);
     } else {
         EnableWindow(GetDlgItem(gDialog, IDC_SHARED), false);
