@@ -8,8 +8,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmd, int nS
     USES_CONVERSION;
     LPSTR arg;
     LPWSTR filename;
-    if ((arg = strstr(cmd, CONFIG_OPTION)) != NULL)
-    {
+    if ((arg = strstr(cmd, CONFIG_OPTION)) != NULL) {
         arg += strlen(CONFIG_OPTION);
         filename = A2W(arg);
         PathRemoveBlanks(filename);

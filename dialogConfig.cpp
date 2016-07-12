@@ -5,8 +5,8 @@ static void DialogInit(void);
 static void Quit(void);
 static void Submit(void);
 
-static HWND gDialog;
 static ConfigData gConfigData;
+static HWND gDialog;
 
 LPWSTR gOriginFilename;
 
@@ -62,23 +62,23 @@ static void DialogInit(void)
 
     str.LoadStringW(IDS_SSID_TITLE);
     SetWindowText(GetDlgItem(gDialog, IDC_NEW_SSID_TITLE), str);
-    str.LoadStringW(IDS_PASSWORD_TITLE);
-    SetWindowText(GetDlgItem(gDialog, IDC_NEW_PASSWORD_TITLE), str);
+    str.LoadStringW(IDS_KEY_TITLE);
+    SetWindowText(GetDlgItem(gDialog, IDC_NEW_KEY_TITLE), str);
 
     HMODULE module = GetModuleHandle(NULL);
-    HRSRC resource = FindResource(module, MAKEINTRESOURCE(IDR_CONFIG_FILE), L"BIN");
+    HRSRC resource = FindResource(module, MAKEINTRESOURCE(IDR_CONFIG_FILE), RT_RCDATA);
     HGLOBAL global = LoadResource(module, resource);
     int size = SizeofResource(module, resource);
     if (size == sizeof(gConfigData)) {
         memcpy(&gConfigData, LockResource(global), size);
     }
     SetWindowText(GetDlgItem(gDialog, IDC_NEW_SSID), gConfigData.ssid);
-    SetWindowText(GetDlgItem(gDialog, IDC_NEW_PASSWORD), gConfigData.password);
-    CheckDlgButton(gDialog, IDC_TURNOFFONQUIT, 
-        gConfigData.turnOffOnQuit ? BST_CHECKED : BST_UNCHECKED);
+    SetWindowText(GetDlgItem(gDialog, IDC_NEW_KEY), gConfigData.key);
 
-    str.LoadStringW(IDS_TURNOFFONQUIT);
-    SetWindowText(GetDlgItem(gDialog, IDC_TURNOFFONQUIT), str);
+    CheckDlgButton(gDialog, IDC_ASK_BEFORE_QUIT,
+        gConfigData.askBeforeQuit ? BST_CHECKED : BST_UNCHECKED);
+    str.LoadStringW(IDS_ASK_BEFORE_QUIT);
+    SetWindowText(GetDlgItem(gDialog, IDC_ASK_BEFORE_QUIT), str);
 
     str.LoadStringW(IDS_SUBMIT);
     SetWindowText(GetDlgItem(gDialog, IDC_SUBMIT), str);
@@ -113,8 +113,8 @@ static void Quit(void)
 static void Submit(void)
 {
     GetWindowText(GetDlgItem(gDialog, IDC_NEW_SSID), gConfigData.ssid, SSID_SIZE);
-    GetWindowText(GetDlgItem(gDialog, IDC_NEW_PASSWORD), gConfigData.password, PASSWORD_SIZE);
-    gConfigData.turnOffOnQuit = IsDlgButtonChecked(gDialog, IDC_TURNOFFONQUIT) == BST_CHECKED;
+    GetWindowText(GetDlgItem(gDialog, IDC_NEW_KEY), gConfigData.key, KEY_SIZE);
+    gConfigData.askBeforeQuit = IsDlgButtonChecked(gDialog, IDC_ASK_BEFORE_QUIT) == BST_CHECKED;
 
     HANDLE updateRes = BeginUpdateResource(gOriginFilename, FALSE);
     CStringW str;
@@ -125,7 +125,7 @@ static void Submit(void)
         return;
     }
 
-    if (!UpdateResource(updateRes, L"BIN", MAKEINTRESOURCE(IDR_CONFIG_FILE),
+    if (!UpdateResource(updateRes, RT_RCDATA, MAKEINTRESOURCE(IDR_CONFIG_FILE),
         MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL), &gConfigData, sizeof gConfigData)) {
         SetWindowText(GetDlgItem(gDialog, IDC_OUTPUT), str);
         return;
@@ -137,5 +137,5 @@ static void Submit(void)
     }
 
     str.LoadStringW(IDS_OUTPUT_SUCCESS);
-    SetWindowText(GetDlgItem(gDialog, IDC_OUTPUT), str);   
+    SetWindowText(GetDlgItem(gDialog, IDC_OUTPUT), str);
 }
