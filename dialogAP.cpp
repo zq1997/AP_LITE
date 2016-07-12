@@ -24,16 +24,6 @@ int WINAPI AP_WinMain(HINSTANCE instance)
     gInstance = instance;
     gpAP = new AP();
 
-    CStringW str;
-    str.LoadStringW(IDS_AP_DIALOG_TITLT);
-    gNid.cbSize = sizeof(NOTIFYICONDATA);
-    gNid.hWnd = gDialog;
-    gNid.uID = IDI_ICON;
-    gNid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-    gNid.uCallbackMessage = WM_SHOWTASK;
-    gNid.hIcon = LoadIcon(gInstance, MAKEINTRESOURCE(IDI_ICON));
-    StrCpy(gNid.szTip, str);
-
     HWND gDialog = CreateDialog(gInstance,
         MAKEINTRESOURCE(IDD_AP), GetDesktopWindow(), (DLGPROC)DlgProc);
     if (!gDialog) {
@@ -124,6 +114,16 @@ static INT_PTR CALLBACK DlgProc(HWND dialog, UINT msg, WPARAM wParam, LPARAM lPa
 static void DialogInit(void)
 {
     CStringW str;
+
+    str.LoadStringW(IDS_AP_DIALOG_TITLT);
+    gNid.cbSize = sizeof(NOTIFYICONDATA);
+    gNid.hWnd = gDialog;
+    gNid.uID = IDI_ICON;
+    gNid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+    gNid.uCallbackMessage = WM_SHOWTASK;
+    gNid.hIcon = LoadIcon(gInstance, MAKEINTRESOURCE(IDI_ICON));
+    StrCpy(gNid.szTip, str);
+
     str.LoadStringW(IDS_AP_DIALOG_TITLT);
     SendMessage(gDialog, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandleW(NULL),
         MAKEINTRESOURCE(IDI_ICON)));
