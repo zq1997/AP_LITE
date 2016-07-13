@@ -146,7 +146,7 @@ static void DialogInit(void)
     SetWindowText(GetDlgItem(gDialog, IDC_SHARED_TITLE), str);
 
     HWND combo = GetDlgItem(gDialog, IDC_SHARED);
-    const vector<Connection> *pConnections = gpAP->getOtherConnection();
+    const vector<Connection> *pConnections = gpAP->getOtherConnections();
     for (vector<LPWSTR>::size_type i = 0; i < pConnections->size(); ++i) {
         if ((*pConnections)[i].pNP->Status == NCS_CONNECTED) {
             ComboBox_AddString(combo, (*pConnections)[i].pNP->pszwName);
@@ -169,18 +169,16 @@ static void Switch(void)
     }
 
     HWND combo = GetDlgItem(gDialog, IDC_SHARED);
+    const vector<Connection> *pConnections = gpAP->getOtherConnections();
     int len = ComboBox_GetTextLength(combo) + 1;
-    int which = -1;
+    int which = pConnections->size();
     LPWSTR buffer = new WCHAR[len];
     ComboBox_GetText(combo, buffer, len);
-
-    const vector<Connection> *pConnections = gpAP->getOtherConnection();
     for (vector<LPWSTR>::size_type i = 0; i < pConnections->size(); ++i) {
         if (!StrCmp((*pConnections)[i].pNP->pszwName, buffer)) {
             which = i;
         }
     }
-
     delete[] buffer;
     gpAP->switchStatus(which);
     RefreshInfo();

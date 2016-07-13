@@ -226,7 +226,7 @@ int AP::getStatus(void)
     return mStatus;
 }
 
-const vector<Connection> *AP::getOtherConnection(void)
+const vector<Connection> *AP::getOtherConnections(void)
 {
     return mpOtherConnections;
 }

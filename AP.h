@@ -42,7 +42,7 @@ public:
     ~AP(void);
 
     int getStatus(void);
-    const vector<Connection> *getOtherConnection(void);
+    const vector<Connection> *getOtherConnections(void);
     int getPeerNumber(void);
     void switchStatus(unsigned int which);
 };
